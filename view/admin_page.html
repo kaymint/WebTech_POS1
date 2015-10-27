@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+ <html>
+   <head>
+     <!--Import materialize.css-->
+     <link type="text/css" rel="stylesheet" href="../assets/css/materialize.min.css"  media="screen,projection"/>
+     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+     <!--Let browser know website is optimized for mobile-->
+     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+   </head>
+
+   <body>
+     <!--Import jQuery before materialize.js-->
+     <script type="text/javascript" src="../assets/js/jquery-2.1.3.min.js"></script>
+     <script type="text/javascript" src="../assets/js/materialize.js"></script>
+     <script src="cordova.js"></script>
+     <script>
+       // Function to send ajax request
+       function sendRequest(u){
+         // Send request to server
+         //u a url as a string
+         //async is type of request
+         var obj=$.ajax({url:u,async:false});
+         //Convert the JSON string to object
+         var result=$.parseJSON(obj.responseText);
+         return result;	//return object
+       }
+
+
+      //  $(document).ready(function()
+      //  {
+      //    displayContacts();
+      //  });
+
+       $(document).ready(function()
+       {
+         displayInventory();
+       });
+
+       //sales
+       function displaySales(){
+
+        var theUrl="http://localhost/mobile-web/pos/controllers/sales-controller.php?cmd=2";
+         var obj=sendRequest(theUrl);   //send request to the above url
+         var inventorytable = "";
+         inventorytable += "<table class='highlight'>";
+         inventorytable += "<thead><tr>";
+         inventorytable += "<th data-field='name'>Product</th>";
+         inventorytable += "<th data-field='price'>Total Price</th>";
+         inventorytable += "<th data-field='quantity'>Quantity</th>";
+         inventorytable += "<th data-field='quantity'>Date</th>";
+         inventorytable += "</tr></thead><tbody>";
+
+         if(obj.result===1){          //check result
+           for(var index in obj.sales){
+             inventorytable += "<tr>";
+             inventorytable += "<td>"+obj.sales[index].product_name+"</td>";
+             inventorytable += "<td>"+obj.sales[index].total_price+"</td>";
+             inventorytable += "<td>"+obj.sales[index].quantity_purchased+"</td>";
+             inventorytable += "<td>"+obj.sales[index].date_purchased+"</td>";
+             inventorytable += "</tr>";
+           }
+           inventorytable += "</tbody></table>";
+           $("#sales").html(inventorytable);
+         }else{
+           Materialize.toast('Failed', 4000);
+         }
+       }
+
+       // Function to display all contacts
+
+       function displayInventory(){
+         var theUrl="http://localhost/mobile-web/pos/controllers/products-controller.php?cmd=1";
+         var obj=sendRequest(theUrl);		//send request to the above url
+         var inventorytable = "";
+         inventorytable += "<table class='highlight'>";
+         inventorytable += "<thead><tr>";
+         inventorytable += "<th data-field='name'>Name</th>";
+         inventorytable += "<th data-field='price'>Price</th>";
+         inventorytable += "<th data-field='quantity'>Quantity</th>";
+         inventorytable += "</tr></thead><tbody>";
+
+         if(obj.result===1){					//check result
+           for(var index in obj.inventory){
+             inventorytable += "<tr id="+obj.inventory[index].product_id+">";
+             inventorytable += "<td>"+obj.inventory[index].product_name+"</td>";
+             inventorytable += "<td>"+obj.inventory[index].unit_price+"</td>";
+             inventorytable += "<td>"+obj.inventory[index].quantity+"</td>";
+             inventorytable += "</tr>";
+           }
+           inventorytable += "</tbody></table>";
+           $("#inventory").html(inventorytable);
+         }else{
+           Materialize.toast('Failed', 4000);
+         }
+      }
+
+      function addProduct(){
+        var id = $("#barcode").val();
+        var name = $("#name").val();
+        var desc = $("#desc").val();
+        var qty = $("#quantity").val();
+        var price = $("#price").val();
+        var theUrl = "http://localhost/mobile-web/pos/controllers/products-controller.php?cmd=2&id="+id+"&name="+name+"&desc="+desc+"&qty="+qty+"&price="+price;
+        var obj=sendRequest(theUrl);    //send request to the above url
+        if(obj.result ===1){
+          //alert("added");
+          Materialize.toast('Product Added', 4000);
+        }
+        else{
+          Materialize.toast('Could Not Add', 4000);
+        }
+      }
+
+     function addReading(){
+      cordova.plugins.barcodeScanner.scan(
+            function (result) {
+              $("#barcode").val(result.text);
+          }, 
+          function (error) {
+              alert("Scanning failed: " + error);
+          }
+        );
+    }
+
+    $(function(){
+         $("#scan").click(function(){
+           //addReading();
+           alert();
+         });
+    });
+
+    $(function(){
+         $("#add_button").click(function(){
+           addProduct();
+         });
+    });
+
+    $(function(){
+         $("#inv").click(function(){
+          displayInventory();
+         });
+    });
+
+    $(function(){
+         $("#sale").click(function(){
+          displaySales();
+         });
+    });
+
+       </script>
+
+    <!-- Navigation Menu -->
+    <nav>
+      <div class="nav-wrapper">
+        <a href="#!" class="brand-logo">POS</a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="sass.html"><i class="material-icons">search</i></a></li>
+          <li><a href="badges.html"><i class="material-icons">view_module</i></a></li>
+          <li><a href="collapsible.html"><i class="material-icons">refresh</i></a></li>
+          <li><a href="mobile.html"><i class="material-icons">more_vert</i></a></li>
+        </ul>
+      </div>
+    </nav>
+
+
+      <div style="margin-top:10px" class="">
+            <div class="row">
+                
+                <div class="col s12">
+                  <ul class="tabs">
+                    <li class="tab col s3"><a class="active" id="inv" href="#inventory">Inventory</a></li>
+                    <li class="tab col s3"><a id="sale" href="#sales">Sales</a></li>
+                    <li class="tab col s3"><a id="products" href="#add_product">Add Product</a></li>
+                  </ul>
+                </div>
+                
+                <div id="inventory" class="col s12">
+                    
+                </div>
+                
+                <div id="sales" class="col s12">
+                </div>
+                
+                <div id="add_product" class="col s12">
+                  <!-- Add Product Form-->
+                    <div class="row">
+                      <form class="col s12">
+
+                        <div class="row">
+                          <div class="input-field col s12">
+                            <i class="material-icons prefix">account_circle</i>
+                            <input id="name" type="text" class="validate">
+                            <label for="name">Product Name</label>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="input-field col s12">
+                            <i class="material-icons prefix">phone</i>
+                            <input id="desc" type="tel" class="validate">
+                            <label for="description">Product Description</label>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="input-field col s12">
+                            <i class="material-icons prefix">account_circle</i>
+                            <input id="quantity" type="text" class="validate">
+                            <label for="qty">Quantity</label>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="input-field col s12">
+                            <i class="material-icons prefix">account_circle</i>
+                            <input id="price" type="text" class="validate">
+                            <label for="price">Price</label>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="input-field col s8">
+                            <i class="material-icons prefix">account_circle</i>
+                            <input id="barcode" type="text" class="validate">
+                            <label for="barcode">Barcode</label>
+                          </div>
+                          <button class="btn waves-effect waves-light cyan" type="button" name="action" id="scan">SCAN
+                          </button>
+                        </div>
+
+                          <button class="btn waves-effect waves-light" type="button" name="action" id="add_button">ADD
+                            <i class="material-icons right">add_circle</i>
+                          </button>
+
+                      </form>
+                    </div>
+                </div>
+              </div>
+      </div>
+
+
+    
+    
+
+</body>
+</html>
